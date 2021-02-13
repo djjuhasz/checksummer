@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func getFileHash(path string) (sum []byte, err error) {
@@ -55,7 +56,11 @@ func processDir(dirname string) {
 }
 
 func main() {
+	t := time.Now()
+
 	var dirname string = "D:\\Photos\\Photos\\2020 Calendar"
 
 	processDir(dirname)
+
+	fmt.Printf("Run time: %.4fs", time.Since(t).Seconds())
 }
