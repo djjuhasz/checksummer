@@ -4,14 +4,15 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
+	"path"
 	"time"
 )
 
-func getFileHash(path string) (sum []byte, err error) {
-	fp, err := os.Open(path)
+func getFileHash(file *File) (*File, error) {
+	fp, err := os.Open(file.FullPath())
 
 	if err != nil {
 		return nil, err
@@ -24,35 +25,55 @@ func getFileHash(path string) (sum []byte, err error) {
 		return nil, err
 	}
 
-	sum = h.Sum(nil)
+	file.SetHashFunc(h)
+	file.SetHash(h.Sum(nil))
 
-	return sum, err
+	return file, nil
 }
 
-func checksumFile(path string, info os.FileInfo, err error) error {
+func checksumFile(dir string, info os.FileInfo) (*File, error) {
 	// Skip directories
 	if info.IsDir() {
-		return err
+		return nil, nil
 	}
 
-	hash, err := getFileHash(path)
+	file := NewFile(info)
+
+	file.SetFullPath(path.Join(dir, info.Name()))
+
+	file, err := getFileHash(file)
 
 	// Log errors and keep going
 	if err != nil {
 		log.Println(err)
 
-		return nil
+		return nil, err
 	}
 
-	log.Printf("File: %s, size: %d B, checksum: %x\n", path, info.Size(), hash)
-
-	return err
+	return file, err
 }
 
 func processDir(dirname string) {
 	fmt.Printf("Checksumming files in \"%s\"", dirname)
 
-	filepath.Walk(dirname, checksumFile)
+	files, err := ioutil.ReadDir(dirname)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, f := range files {
+		cs, err := checksumFile(dirname, f)
+
+		if err != nil {
+			log.Printf("Error: %s, skipping %s\\%s", err, dirname, f.Name())
+
+			continue
+		}
+
+		log.Printf("File: %s, size: %d B, checksum: %x\n", cs.FullPath(), cs.Size(), cs.Hash())
+	}
+
 }
 
 func main() {
