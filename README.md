@@ -1,7 +1,7 @@
 # checksummer
 
-Generate sha256 checksums for files in a directory.
+Generates sha256 checksums for the files in the specified directories.
 
-Usage
------
+## Usage
+
 checksummer PATH1 [PATH2 [...]]
