@@ -2,6 +2,7 @@ package main
 
 import (
 	"hash"
+	"io/fs"
 	"os"
 )
 
@@ -52,9 +53,13 @@ func (f *File) SetHashFunc(val hash.Hash) {
 }
 
 // NewFile returns a File
-func NewFile(fi os.FileInfo) *File {
-	f := new(File)
-	f.FileInfo = fi
+func NewFile(de fs.DirEntry) (*File, error) {
+	info, err := de.Info()
+	if err != nil {
+		return nil, err
+	}
 
-	return f
+	return &File{
+		FileInfo: info,
+	}, nil
 }
