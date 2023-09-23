@@ -12,11 +12,6 @@ Usage:
 checksummer PATH1 [PATH2 [...]]`)
 }
 
-func fail(err error) {
-	fmt.Printf("Fatal error: %v\n", err.Error())
-	os.Exit(1)
-}
-
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Missing PATH.")
@@ -25,6 +20,7 @@ func main() {
 	}
 
 	if err := Run(os.Args[1:]); err != nil {
-		fail(err)
+		fmt.Printf("Fatal error: %v\n", err.Error())
+		os.Exit(1)
 	}
 }
